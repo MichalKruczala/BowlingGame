@@ -20,9 +20,5 @@ public class ScoresProvider {
         }
         return new Score(firstScore, secondScore, false);
     }
-    public int getRandomBonusScore(){
-        Random random = new Random();
-        return random.nextInt(11);
-    }
-}
 
+    public int 

@@ -18,15 +18,4 @@ public class Score implements Countable {
         return 0;
     }
 
-    public Score(int firstScore, int secondScore, boolean extraScore) {
-        this.firstScore = firstScore;
-        this.secondScore = secondScore;
-        this.extraScore = extraScore;
-
-    }
-    public boolean hasExtraScore(){
-        return this.extraScore;
-
-
-    }
-}
+    public Score(int f
