@@ -10,14 +10,23 @@ import lombok.ToString;
 public class Score implements Countable {
     private int firstScore;
     private int secondScore;
+    private int thirdScore;
+    private boolean extraScore;
 
     @Override
     public int countTotal() {
         return 0;
     }
 
-    @Override
-    public int getFirstScore() {
-        return firstScore;
+    public Score(int firstScore, int secondScore, boolean extraScore) {
+        this.firstScore = firstScore;
+        this.secondScore = secondScore;
+        this.extraScore = extraScore;
+
+    }
+    public boolean hasExtraScore(){
+        return this.extraScore;
+
+
     }
 }

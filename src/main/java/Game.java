@@ -11,20 +11,34 @@ public class Game {
 
         Score[] scoreArray = new Score[10];
         for (int i = 0; i < scoreArray.length; i++) {
-            scoreArray[i] = scoresProvider.getRandomScores();
+            if (i == 9) {
+                Score score = scoresProvider.getRandomPairOfScores();
+                if (score.countTotal() == 10 || score.getFirstScore() == 10 || score.getSecondScore() == 10) {
+                    Score scoreWithExtraRoll = new Score(
+                            score.getFirstScore(),
+                            score.getSecondScore(),
+                            scoresProvider.getRandomBonusScore(),
+                            true);
+                    scoreArray[i] = scoreWithExtraRoll;
+                }
+            }
+            scoreArray[i] = scoresProvider.getRandomPairOfScores();
         }
-        //Wypełnianie randomowymi wynikami
 
 
         List<Countable> cos = new ArrayList<>();
         for (Score score : scoreArray) {
-            if (score.getFirstScore() == 10 || score.getSecondScore() == 10) {
-                cos.add(new Strike(score.getFirstScore()));
-            }
-            if (score.countTotal() == 10) {
-                cos.add(new Spare(score.getFirstScore(), score.getSecondScore()));
+            if (score.hasExtraScore()) {
+                cos.add(new NonBonusScore(score.getFirstScore(), score.getSecondScore(), score.getThirdScore()));
             } else {
-                cos.add(new NonBonusScore(score.getFirstScore(), score.getSecondScore()));
+                if (score.getFirstScore() == 10 || score.getSecondScore() == 10) {
+                    cos.add(new Strike(score.getFirstScore()));
+                }
+                if (score.countTotal() == 10) {
+                    cos.add(new Spare(score.getFirstScore(), score.getSecondScore()));
+                } else {
+                    cos.add(new NonBonusScore(score.getFirstScore(), score.getSecondScore()));
+                } //score.
             }
         }
         System.out.println(cos);
@@ -33,19 +47,22 @@ public class Game {
 
         int[] frameScore = new int[10];
         for (int i = 0; i < 10; i++) {
-            int actualFrameScore = frameScore[i];
+            int actualFrameScore = 0;
+            frameScore[i] = actualFrameScore;
 
             Countable actualObject = objects[i];
             Countable nextObject = objects[i + 1];
             Countable secondNextObject = objects[i + 2];
 
-            if (actualObject instanceof Spare) {                             //  jedna następna piłka
+            if (i != 9 && actualObject instanceof Spare) {                             //  jedna następna piłka
                 actualFrameScore += (actualObject).countTotal() + nextObject.getFirstScore();
             }
-            if (actualObject instanceof Strike) {                       // dwie następne piłki
+            if (i !=9 && actualObject instanceof Strike) {                       // dwie następne piłki
                 actualFrameScore += actualObject.countTotal();
 
                 if (nextObject instanceof Strike) {
+
+
                     //TODO jeżeli jesteśmy w 9 framie to nie ma secondNextObject! ale za to w 10 frame(nextObject) moga być
                     // 3x Strike/ Spare + strike/ non bonus score + zwykłe punkty
 
@@ -66,4 +83,3 @@ public class Game {
 
 
 }
-

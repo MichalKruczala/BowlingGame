@@ -10,15 +10,18 @@ import lombok.ToString;
 public class NonBonusScore implements Countable {
     private int firstScore;
     private int secondScore;
+    private int thirdScore;
 
+
+    public NonBonusScore(int firstScore, int secondScore) {
+        this.firstScore = firstScore;
+        this.secondScore = secondScore;
+    }
 
     @Override
     public int countTotal() {
-        return firstScore + secondScore;
-    }
-
-    @Override
-    public int getFirstScore() {
-        return firstScore;
+        return 0;
     }
 }
+
+ 
