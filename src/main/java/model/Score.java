@@ -15,7 +15,19 @@ public class Score implements Countable {
 
     @Override
     public int countTotal() {
-        return 0;
+        return firstScore + secondScore;
     }
 
-    public Score(int f
+    public Score(int firstScore, int secondScore, boolean extraScore) {
+        this.firstScore = firstScore;
+        this.secondScore = secondScore;
+        this.extraScore = extraScore;
+
+    }
+
+    public boolean hasExtraScore() {
+        return this.extraScore;
+
+
+    }
+}

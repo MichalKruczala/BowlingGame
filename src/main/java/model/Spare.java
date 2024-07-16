@@ -6,17 +6,19 @@ import lombok.ToString;
 
 @AllArgsConstructor
 @ToString
+@Getter
 public class Spare implements Countable {
     private int firstScore;
     private int secondScore;
 
     @Override
     public int countTotal() {
-        return firstScore+ secondScore;
+        return firstScore + secondScore;
     }
 
     @Override
     public int getFirstScore() {
         return firstScore;
     }
+
 }
