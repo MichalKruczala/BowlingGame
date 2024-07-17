@@ -1,8 +1,9 @@
-package model;
+package model.classifiedScores;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
+import model.Countable;
 
 
 @ToString

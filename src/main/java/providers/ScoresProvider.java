@@ -23,7 +23,6 @@ public class ScoresProvider {
     }
 
     public int getRandomBonusScore() {
-        Random random = new Random();
-        return random.nextInt(11);
+        return new Random().nextInt(11);
     }
 }

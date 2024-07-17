@@ -1,4 +1,8 @@
-import model.*;
+import model.Countable;
+import model.Score;
+import model.classifiedScores.NonBonusScore;
+import model.classifiedScores.Spare;
+import model.classifiedScores.Strike;
 import providers.ScoresProvider;
 
 import java.util.ArrayList;
@@ -7,11 +11,29 @@ import java.util.List;
 
 public class Game {
     public static void main(String[] args) {
-        ScoresProvider scoresProvider = new ScoresProvider();
 
+        Score[] scoreArray = getScores();
+        Countable[] classifiedScores = getClassifiedScores(scoreArray);
+        int[] frameScores = getPointsForEachFrame(classifiedScores);
+        int totalPointsInGame = getTotalPointsInGame(frameScores);
+
+        for (Score score : scoreArray) {
+            System.out.println(score);
+        }
+        System.out.println("------------------------------------");
+        for (Countable object : classifiedScores) {
+            System.out.println(object);
+        }
+        System.out.println("Points in each frame: " + Arrays.toString(frameScores));
+        System.out.println(totalPointsInGame);
+    }
+
+
+    public static Score[] getScores() {
         Score[] scoreArray = new Score[10];
-        for (int i = 0; i < 10; i++) {
-            if (i == 9) {
+        ScoresProvider scoresProvider = new ScoresProvider();
+        for (int i = 0; i < scoreArray.length; i++) {
+            if (i == scoreArray.length - 1) {
                 Score score = scoresProvider.getRandomPairOfScores();
                 if (score.countTotal() == 10 || score.getFirstScore() == 10 || score.getSecondScore() == 10) {
                     Score scoreWithExtraRoll = new Score(
@@ -31,6 +53,10 @@ public class Game {
                 scoreArray[i] = scoresProvider.getRandomPairOfScores();
             }
         }
+        return scoreArray;
+    }
+
+    public static Countable[] getClassifiedScores(Score[] scoreArray) {
         List<Countable> namedScores = new ArrayList<>();
         for (Score score : scoreArray) {
             if (score.hasExtraScore()) {
@@ -41,20 +67,26 @@ public class Game {
                         true));
             } else {
                 if (score.getFirstScore() == 10 || score.getSecondScore() == 10) {
-                    namedScores.add(new Strike(score.getFirstScore()));
-                }
-                else if (score.countTotal() == 10) {
+                    if (score.getFirstScore() == 10) {
+                        namedScores.add(new Strike(score.getFirstScore()));
+                    } else {
+                        namedScores.add(new Strike(score.getSecondScore()));
+                    }
+                } else if (score.countTotal() == 10) {
                     namedScores.add(new Spare(score.getFirstScore(), score.getSecondScore()));
                 } else {
                     namedScores.add(new NonBonusScore(score.getFirstScore(), score.getSecondScore(), false));
                 }
             }
         }
-        Countable[] objects = namedScores.toArray(new Countable[0]);
-        int[] frameScore = new int[10];
+        return namedScores.toArray(new Countable[0]);
+    }
+
+    public static int[] getPointsForEachFrame(Countable[] classifiedScores) {
+        int[] frameScores = new int[10];
         for (int i = 0; i < 10; i++) {
             int actualFrameScore = 0;
-            Countable actualObject = objects[i];
+            Countable actualObject = classifiedScores[i];
 
             if (i == 9 && actualObject instanceof NonBonusScore && ((NonBonusScore) actualObject).hasExtraRoll()) {
                 actualFrameScore += ((NonBonusScore) actualObject).countTotalWithExtraRoll();
@@ -63,27 +95,25 @@ public class Game {
             } else if (i < 9 && actualObject instanceof Spare) {
                 actualFrameScore += actualObject.countTotal();
                 if (i + 1 < 10) {
-                    actualFrameScore += objects[i + 1].getFirstScore();
+                    actualFrameScore += classifiedScores[i + 1].getFirstScore();
                 }
             } else if (i < 9 && actualObject instanceof Strike) {
                 actualFrameScore += actualObject.countTotal();
                 if (i + 1 < 10) {
-                    actualFrameScore += objects[i + 1].countTotal();
-                    if (objects[i + 1] instanceof Strike && i + 2 < 10) {
-                        actualFrameScore += objects[i + 2].getFirstScore();
+                    actualFrameScore += classifiedScores[i + 1].countTotal();
+                    if (classifiedScores[i + 1] instanceof Strike && i + 2 < 10) {
+                        actualFrameScore += classifiedScores[i + 2].getFirstScore();
                     }
                 }
             } else {
                 actualFrameScore += actualObject.countTotal();
             }
-
-            frameScore[i] = actualFrameScore;
+            frameScores[i] = actualFrameScore;
         }
-        for (Countable object : objects) {
-            System.out.println(object);
+        return frameScores;
+    }
 
-        }
-        System.out.println(Arrays.toString(frameScore));
-        System.out.println(Arrays.stream(frameScore).sum());
+    private static int getTotalPointsInGame(int[] frameScores) {
+        return Arrays.stream(frameScores).sum();
     }
 }
