@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.ToString;
 import model.Countable;
 
+
 @AllArgsConstructor
 @ToString
 public class Strike implements Countable {

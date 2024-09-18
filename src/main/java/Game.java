@@ -8,55 +8,74 @@ import providers.ScoresProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Game {
     public static void main(String[] args) {
+        int[] scores = getscores();
+        Score[] framesScores = getFramesScores(scores);
+        Countable[] classifiedScores = getClassifiedScores(framesScores);
+        int[] classifiedFrameScores = getCalculatedPointsForEachFrame(classifiedScores);
+        int totalPointsInGame = getTotalPointsInGame(classifiedFrameScores);
 
-        Score[] scoreArray = getScores();
-        Countable[] classifiedScores = getClassifiedScores(scoreArray);
-        int[] frameScores = getPointsForEachFrame(classifiedScores);
-        int totalPointsInGame = getTotalPointsInGame(frameScores);
-
-        for (Score score : scoreArray) {
+        System.out.println(Arrays.toString(scores));
+        for (Score score : framesScores) {
             System.out.println(score);
         }
         System.out.println("------------------------------------");
         for (Countable object : classifiedScores) {
             System.out.println(object);
         }
-        System.out.println("Points in each frame: " + Arrays.toString(frameScores));
+        System.out.println("Points in each frame: " + Arrays.toString(classifiedFrameScores));
         System.out.println(totalPointsInGame);
     }
 
+    public static int[] getscores() {
+        ScoresProvider randomScoreProvider = new ScoresProvider();
+        int[] scores = new int[21];
+        for (int i = 0; i < scores.length - 1; i += 2) {
+            Score randomPairOfScores = randomScoreProvider.getRandomPairOfScores();
+            scores[i] = randomPairOfScores.getFirstScore();
+            scores[i + 1] = randomPairOfScores.getSecondScore();
+            if (i == 18) {
+                scores[20] = randomScoreProvider.getRandomBonusScore();
+            }
+        }
+        return scores;
+    }
 
-    public static Score[] getScores() {
+    public static Score[] getFramesScores(int[] rolls) {
         Score[] scoreArray = new Score[10];
-        ScoresProvider scoresProvider = new ScoresProvider();
-        for (int i = 0; i < scoreArray.length; i++) {
-            if (i == scoreArray.length - 1) {
-                Score score = scoresProvider.getRandomPairOfScores();
-                if (score.countTotal() == 10 || score.getFirstScore() == 10 || score.getSecondScore() == 10) {
+        for (int i = 0, j = 0; i < rolls.length - 1 && j < scoreArray.length; i += 2, j++) {
+            boolean isLastFrame = j == scoreArray.length - 1;
+            if (isLastFrame) {
+                if (rolls[i] + rolls[i + 1] == 10 || rolls[i] == 10 || rolls[i + 1] == 10) {
                     Score scoreWithExtraRoll = new Score(
-                            score.getFirstScore(),
-                            score.getSecondScore(),
-                            scoresProvider.getRandomBonusScore(),
+                            rolls[i],
+                            rolls[i + 1],
+                            rolls[i + 2],
                             true);
-                    scoreArray[i] = scoreWithExtraRoll;
+                    scoreArray[j] = scoreWithExtraRoll;
                 } else {
                     Score nonBonusScore = new Score(
-                            score.getFirstScore(),
-                            score.getSecondScore(),
+                            rolls[i],
+                            rolls[i + 1],
                             false);
-                    scoreArray[i] = nonBonusScore;
+                    scoreArray[j] = nonBonusScore;
                 }
             } else {
-                scoreArray[i] = scoresProvider.getRandomPairOfScores();
+                scoreArray[j] = new Score(rolls[i],
+                        rolls[i + 1], false);
             }
         }
         return scoreArray;
     }
 
     public static Countable[] getClassifiedScores(Score[] scoreArray) {
+        if (scoreArray == null || Arrays.stream(scoreArray).anyMatch(Objects::isNull) ||
+                Arrays.stream(scoreArray).anyMatch(x -> x.countTotal() > 10 || x.countTotal() < 0)) {
+            throw new IllegalArgumentException("Wrong value in scoresArray");
+        }
         List<Countable> namedScores = new ArrayList<>();
         for (Score score : scoreArray) {
             if (score.hasExtraScore()) {
@@ -82,23 +101,23 @@ public class Game {
         return namedScores.toArray(new Countable[0]);
     }
 
-    public static int[] getPointsForEachFrame(Countable[] classifiedScores) {
+    public static int[] getCalculatedPointsForEachFrame(Countable[] classifiedScores) {
+        if (classifiedScores == null || classifiedScores.length != 10 || Arrays.stream(classifiedScores).anyMatch(Objects::isNull) ||
+                Arrays.stream(classifiedScores).anyMatch(x -> x.countTotal() > 10 || x.countTotal() < 0)) {
+            throw new IllegalArgumentException("Wrong value in scoresArray");
+        }
         int[] frameScores = new int[10];
         for (int i = 0; i < 10; i++) {
             int actualFrameScore = 0;
-            Countable actualObject = classifiedScores[i];
-
-            if (i == 9 && actualObject instanceof NonBonusScore && ((NonBonusScore) actualObject).hasExtraRoll()) {
-                actualFrameScore += ((NonBonusScore) actualObject).countTotalWithExtraRoll();
-            } else if (i == 9 && actualObject instanceof NonBonusScore && !((NonBonusScore) actualObject).hasExtraRoll()) {
-                actualFrameScore += actualObject.countTotal();
-            } else if (i < 9 && actualObject instanceof Spare) {
-                actualFrameScore += actualObject.countTotal();
-                if (i + 1 < 10) {
-                    actualFrameScore += classifiedScores[i + 1].getFirstScore();
-                }
-            } else if (i < 9 && actualObject instanceof Strike) {
-                actualFrameScore += actualObject.countTotal();
+            Countable currentFrame = classifiedScores[i];
+            if (i == 9 && currentFrame instanceof NonBonusScore && ((NonBonusScore) currentFrame).hasExtraRoll()) {
+                actualFrameScore += ((NonBonusScore) currentFrame).countTotalWithExtraRoll();
+            } else if (i == 9 && currentFrame instanceof NonBonusScore && !((NonBonusScore) currentFrame).hasExtraRoll()) {
+                actualFrameScore += currentFrame.countTotal();
+            } else if (i < 9 && currentFrame instanceof Spare) {
+                actualFrameScore += currentFrame.countTotal() + classifiedScores[i + 1].getFirstScore();
+            } else if (i < 9 && currentFrame instanceof Strike) {
+                actualFrameScore += currentFrame.countTotal();
                 if (i + 1 < 10) {
                     actualFrameScore += classifiedScores[i + 1].countTotal();
                     if (classifiedScores[i + 1] instanceof Strike && i + 2 < 10) {
@@ -106,7 +125,7 @@ public class Game {
                     }
                 }
             } else {
-                actualFrameScore += actualObject.countTotal();
+                actualFrameScore += currentFrame.countTotal();
             }
             frameScores[i] = actualFrameScore;
         }

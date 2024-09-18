@@ -1,6 +1,5 @@
 package model.classifiedScores;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 import model.Countable;
@@ -9,10 +8,10 @@ import model.Countable;
 @ToString
 @Getter
 public class NonBonusScore implements Countable {
-    private int firstScore;
-    private int secondScore;
+    private final int firstScore;
+    private final int secondScore;
     private int thirdScore;
-    private boolean extraRoll;
+    private final boolean extraRoll;
 
 
     public NonBonusScore(int firstScore, int secondScore, boolean extraRoll) {
